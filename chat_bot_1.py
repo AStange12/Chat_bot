@@ -1,68 +1,89 @@
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
 import re
 import long_responses as long
 
-def msg_prob(msg, known_words, single_resp=False, req_words=[], only_one=False):
-    msg_certainty = 0
-    has_req_words = True
+class ChatBotHandler(BaseHTTPRequestHandler):
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
 
-    # Counts the amount of known words in the msg
-    for word in msg:
-        if word in known_words:
-            msg_certainty += 1
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length).decode('utf-8')
+        user_message = json.loads(post_data)['message']
+        
+        bot_response = self.get_bot_response(user_message)
+        
+        self._set_response()
+        response = {'bot_response': bot_response}
+        self.wfile.write(json.dumps(response).encode('utf-8'))
 
-    # Calcs the % of known words in msg
-    percentage = float(msg_certainty) / float(len(known_words))
+    def get_bot_response(self, user_input):
 
-    # makes sure msg has req words
-    for word in req_words:
-        if only_one:
-            if word in msg:
-                break
-        else:
-            if word not in msg:
-                has_req_words = False
-                break
+        def msg_prob(msg, known_words, single_resp=False, req_words=[], only_one=False):
+            msg_certainty = 0
+            has_req_words = True
 
-    # return statement  NOTE: make it so if it has one of a required word it will still return
-    if has_req_words or single_resp:
-        return int(percentage*100)
-    else:
-        return 0
+            # Counts the amount of known words in the msg
+            for word in msg:
+                if word in known_words:
+                    msg_certainty += 1
 
-def check_all_msgs(msg):
-    highest_prob_list = {}
+            # Calcs the % of known words in msg
+            percentage = float(msg_certainty) / float(len(known_words))
 
-    def response(bot_resp, list_of_words, single_resp=False, req_words=[], only_one=False):
-        nonlocal highest_prob_list
-        highest_prob_list[bot_resp] = msg_prob(msg, list_of_words, single_resp, req_words, only_one)
+            # makes sure msg has req words
+            for word in req_words:
+                if only_one:
+                    if word in msg:
+                        break
+                else:
+                    if word not in msg:
+                        has_req_words = False
+                        break
 
-    # Responses ------------------------------------------------------------------------
-    response('Whats good!', ['hello', 'hi', 'sup', 'hey', 'heyo'], single_resp=True)
-    response('robo tings', ['whats', 'up', 'what', 'are', 'you', 'doing'], req_words=['whats', 'doing'], only_one=True)
-    response('Good morn to you sir', ['good', 'morning'], req_words=['morning'])
-    response('good night, sleep tight', ['good', 'night', 'evening'], req_words=['night', 'evening'], only_one=True)
-    response(long.R_ROBOT, ['are', 'you', 'robot'], req_words=['you', 'robot'])
-    response('what', ['what', 'huh'], single_resp=True)
-    response('yuh huh', ['no', 'nah', 'nope'], single_resp=True)
-    response('nuh uh', ['yes', 'yep', 'yah'], single_resp=True)
-    response('I\'m chillin', ['how', 'are', 'you', 'doing'], req_words=['how'])
-    response('Thanks bruda', ['i', 'like', 'love', 'you'], req_words=['you'])
-    response(long.R_EATING, ['what', 'you', 'eat'], req_words=['you', 'eat'])
+            # return statement  NOTE: make it so if it has one of a required word it will still return
+            if has_req_words or single_resp:
+                return int(percentage*100)
+            else:
+                return 0
 
-    best_match = max(highest_prob_list, key=highest_prob_list.get)
-    # print(highest_prob_list)
+        def check_all_msgs(msg):
+            highest_prob_list = {}
 
-    return long.unknown() if highest_prob_list[best_match] < 1 else best_match
+            def response(bot_resp, list_of_words, single_resp=False, req_words=[], only_one=False):
+                nonlocal highest_prob_list
+                highest_prob_list[bot_resp] = msg_prob(msg, list_of_words, single_resp, req_words, only_one)
 
-# removes extra parts of msg, then adds in to all msgs and returns a response
-def get_response(user_input):
-    split_msg = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
-    response = check_all_msgs(split_msg)
-    return response
+            # Responses ------------------------------------------------------------------------
+            response('Whats good!', ['hello', 'hi', 'sup', 'hey', 'heyo'], single_resp=True)
+            response('robo tings', ['whats', 'up', 'what', 'are', 'you', 'doing'], req_words=['whats', 'doing'], only_one=True)
+            response('Good morn to you sir', ['good', 'morning'], req_words=['morning'])
+            response('good night, sleep tight', ['good', 'night', 'evening'], req_words=['night', 'evening'], only_one=True)
+            response(long.R_ROBOT, ['are', 'you', 'robot'], req_words=['you', 'robot'])
+            response('what', ['what', 'huh'], single_resp=True)
+            response('yuh huh', ['no', 'nah', 'nope'], single_resp=True)
+            response('nuh uh', ['yes', 'yep', 'yah'], single_resp=True)
+            response('I\'m chillin', ['how', 'are', 'you', 'doing'], req_words=['how'])
+            response('Thanks bruda', ['i', 'like', 'love', 'you'], req_words=['you'])
+            response(long.R_EATING, ['what', 'you', 'eat'], req_words=['you', 'eat'])
 
-# intro
-print('Bot 1.0: Hello, I am Bot 1.0, though I am a simple Chatbot I will chat with you to the best of my ability!')
+            best_match = max(highest_prob_list, key=highest_prob_list.get)
+            # print(highest_prob_list)
 
-# testing response system
-while True:
-    print('Bot 1.0: ' + get_response(input('User: ')))
+            return long.unknown() if highest_prob_list[best_match] < 1 else best_match
+
+        split_msg = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
+        response = self.check_all_msgs(split_msg)
+        return response
+
+def run(server_class=HTTPServer, handler_class=ChatBotHandler, port=8000):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print(f'Starting server on port {port}...')
+    httpd.serve_forever()
+
+if __name__ == '__main__':
+    run()
