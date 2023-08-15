@@ -1,6 +1,26 @@
 import re
 import long_responses as long
 
+# chatbot.py
+from flask import Flask, render_template, request, jsonify
+from chat_bot_1 import get_response
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/get_response')
+def get_chatbot_response():
+    user_input = request.args.get('user_input', '')
+    chatbot_response = get_response(user_input)
+    return jsonify({'response': chatbot_response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
 def msg_prob(msg, known_words, single_resp=False, req_words=[], only_one=False):
     msg_certainty = 0
     has_req_words = True
