@@ -32,7 +32,7 @@ class ChatBotHandler(BaseHTTPRequestHandler):
         response = self.check_all_msgs(split_msg)
         return response
 
-    def msg_prob(msg, known_words, single_resp=False, req_words=[], only_one=False):
+    def msg_prob(self, msg, known_words, single_resp=False, req_words=[], only_one=False):
         msg_certainty = 0
         has_req_words = True
 
