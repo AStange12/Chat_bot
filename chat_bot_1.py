@@ -1,8 +1,30 @@
-import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
 import re
+
 import long_responses as long
 
-def get_bot_response(self, user_input):
+class ChatBotHandler(BaseHTTPRequestHandler):
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+
+    def do_POST(self):
+        content_length = int(self.headers['Content-Length'])
+        post_data = self.rfile.read(content_length).decode('utf-8')
+        user_message = json.loads(post_data)['message']
+
+        bot_response = self.get_bot_response(user_message)
+
+        self._set_response()
+        response = {'bot_response': bot_response}
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+
+    def get_bot_response(self, user_input):
+        split_msg = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
+        response = self.check_all_msgs(split_msg)
+        return response
 
     def msg_prob(msg, known_words, single_resp=False, req_words=[], only_one=False):
         msg_certainty = 0
@@ -32,12 +54,13 @@ def get_bot_response(self, user_input):
         else:
             return 0
 
-    def check_all_msgs(msg):
+
+    def check_all_msgs(self, msg):
         highest_prob_list = {}
 
         def response(bot_resp, list_of_words, single_resp=False, req_words=[], only_one=False):
             nonlocal highest_prob_list
-            highest_prob_list[bot_resp] = msg_prob(msg, list_of_words, single_resp, req_words, only_one)
+            highest_prob_list[bot_resp] = self.msg_prob(msg, list_of_words, single_resp, req_words, only_one)
 
         # Responses ------------------------------------------------------------------------
         response('Whats good!', ['hello', 'hi', 'sup', 'hey', 'heyo'], single_resp=True)
@@ -53,19 +76,10 @@ def get_bot_response(self, user_input):
         response(long.R_EATING, ['what', 'you', 'eat'], req_words=['you', 'eat'])
 
         best_match = max(highest_prob_list, key=highest_prob_list.get)
-        # print(highest_prob_list)
-
         return long.unknown() if highest_prob_list[best_match] < 1 else best_match
 
-    split_msg = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
-    response = self.check_all_msgs(split_msg)
-    return response
-
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: chat_bot_1.py <user_input>")
-        sys.exit(1)
-
-    user_input = sys.argv[1]
-    bot_response = get_bot_response(user_input)
-    print(bot_response)
+    server_address = ('', 8000)
+    httpd = HTTPServer(server_address, ChatBotHandler)
+    print('Starting server on port 8000...')
+    httpd.serve_forever()

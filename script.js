@@ -16,23 +16,27 @@ function displayBotMessage(message) {
     chatBox.appendChild(botMessage);
 }
 
-sendButton.addEventListener('click', () => {
+sendButton.addEventListener('click', async () => {
     const message = userInput.value;
     if (message.trim() === '') return;
 
     displayUserMessage(message);
     userInput.value = '';
 
-    const response = await fetch('http://localhost:8000', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-    });
+    try {
+        const response = await fetch('http://localhost:8000', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message }),
+        });
 
-    const responseData = await response.json();
-    const botResponse = responseData.bot_response;
+        const responseData = await response.json();
+        const botResponse = responseData.bot_response;
 
-    displayBotMessage(botResponse);
+        displayBotMessage(botResponse);
+    } catch (error) {
+        console.error('Error:', error);
+    }
 });
