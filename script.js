@@ -1,3 +1,6 @@
+const http = require('http');
+const { spawn } = require('child_process');
+
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
@@ -16,23 +19,26 @@ function displayBotMessage(message) {
     chatBox.appendChild(botMessage);
 }
 
-sendButton.addEventListener('click', async () => {
+sendButton.addEventListener('click', () => {
     const message = userInput.value;
     if (message.trim() === '') return;
 
     displayUserMessage(message);
     userInput.value = '';
 
-    const response = await fetch('http://localhost:8000', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
+    // Run the Python script using Node.js child_process
+    const pythonProcess = spawn('python', ['chat_bot_1.py', message]);
+
+    pythonProcess.stdout.on('data', (data) => {
+        const botResponse = data.toString().trim();
+        displayBotMessage(botResponse);
     });
 
-    const responseData = await response.json();
-    const botResponse = responseData.bot_response;
+    pythonProcess.stderr.on('data', (data) => {
+        console.error(`Python Error: ${data}`);
+    });
 
-    displayBotMessage(botResponse);
+    pythonProcess.on('close', (code) => {
+        console.log(`Python process exited with code ${code}`);
+    });
 });
