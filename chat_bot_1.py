@@ -12,11 +12,6 @@ class ChatBotHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')  # Allow POST and OPTIONS requests
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
-        
-    def _set_response(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -28,6 +23,9 @@ class ChatBotHandler(BaseHTTPRequestHandler):
         self._set_response()
         response = {'bot_response': bot_response}
         self.wfile.write(json.dumps(response).encode('utf-8'))
+
+    def do_OPTIONS(self):
+        self._set_response()
 
     def get_bot_response(self, user_input):
         split_msg = re.split(r'\s+|[,;?!.-]\s*', user_input.lower())
