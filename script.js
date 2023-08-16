@@ -19,8 +19,18 @@ function displayBotMessage(message) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+userInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // Prevent the default behavior (e.g., line break)
+        sendMessage(); // Call the function to send the message
+    }
+});
 
-sendButton.addEventListener('click', async () => {
+sendButton.addEventListener('click', () => {
+    sendMessage(); // Call the function to send the message
+});
+
+async function sendMessage() {
     const message = userInput.value;
     if (message.trim() === '') return;
 
@@ -43,4 +53,7 @@ sendButton.addEventListener('click', async () => {
     } catch (error) {
         console.error('Error:', error);
     }
-});
+
+    // Scroll to the bottom of the chat box after sending the message
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
