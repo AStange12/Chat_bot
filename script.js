@@ -14,7 +14,11 @@ function displayBotMessage(message) {
     botMessage.classList.add('chat-message', 'bot-message');
     botMessage.textContent = message;
     chatBox.appendChild(botMessage);
+
+    // Scroll to the bottom of the chat box
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
+
 
 sendButton.addEventListener('click', async () => {
     const message = userInput.value;

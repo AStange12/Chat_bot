@@ -16,12 +16,6 @@ body {
     color: #007bff;
 }
 
-.chat-box {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 10px;
-}
-
 .chat-container {
     background-color: white;
     border-radius: 10px;
