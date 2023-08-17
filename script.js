@@ -32,11 +32,10 @@ sendButton.addEventListener('click', () => {
 });
 
 chatBotSelector.addEventListener('change', () => {
-    // Change the URL based on the selected chat bot
     const selectedChatBot = chatBotSelector.value;
-    const url = `http://localhost:${selectedChatBot === 'chatbot1' ? 8000 : 8001}`;
+    const url = selectedChatBot === 'Chat Bot 1' ? 'http://localhost:8000' : 'http://localhost:8001'; // Updated URLs
 
-    sendButton.dataset.url = url;
+    sendButton.setAttribute('data-url', url);
 });
 
 async function sendMessage() {
