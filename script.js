@@ -1,7 +1,7 @@
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
-const chatBotSelect = document.getElementById('chat-bot-select'); // Add this line
+const chatBotSelector = document.getElementById('chat-bot-selector');
 
 function displayUserMessage(message) {
     const userMessage = document.createElement('div');
@@ -31,16 +31,25 @@ sendButton.addEventListener('click', () => {
     sendMessage(); // Call the function to send the message
 });
 
+chatBotSelector.addEventListener('change', () => {
+    // Change the URL based on the selected chat bot
+    const selectedChatBot = chatBotSelector.value;
+    const url = `http://localhost:${selectedChatBot === 'chatbot1' ? 8000 : 8001}`;
+
+    sendButton.setAttribute('data-url', url);
+});
+
 async function sendMessage() {
     const message = userInput.value;
     if (message.trim() === '') return;
 
-    const chatBotChoice = chatBotSelect.value; // Get the selected chat bot
     displayUserMessage(message);
     userInput.value = '';
 
     try {
-        const response = await fetch(`http://localhost:8000/${chatBotChoice}`, {
+        const url = sendButton.getAttribute('data-url'); // Get the URL from the button attribute
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
