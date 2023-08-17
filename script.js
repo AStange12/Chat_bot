@@ -1,7 +1,7 @@
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
-const chatBotSelector = document.getElementById('chat-bot-selector');
+const chatBotSelector = document.getElementById('chat-bot-select');
 
 function displayUserMessage(message) {
     const userMessage = document.createElement('div');
@@ -36,7 +36,7 @@ chatBotSelector.addEventListener('change', () => {
     const selectedChatBot = chatBotSelector.value;
     const url = `http://localhost:${selectedChatBot === 'chatbot1' ? 8000 : 8001}`;
 
-    sendButton.setAttribute('data-url', url);
+    sendButton.dataset.url = url;
 });
 
 async function sendMessage() {
