@@ -1,6 +1,7 @@
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
+const chatBotSelect = document.getElementById('chat-bot-select'); // Add this line
 
 function displayUserMessage(message) {
     const userMessage = document.createElement('div');
@@ -34,11 +35,12 @@ async function sendMessage() {
     const message = userInput.value;
     if (message.trim() === '') return;
 
+    const chatBotChoice = chatBotSelect.value; // Get the selected chat bot
     displayUserMessage(message);
     userInput.value = '';
 
     try {
-        const response = await fetch('http://localhost:8000', {
+        const response = await fetch(`http://localhost:8000/${chatBotChoice}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
