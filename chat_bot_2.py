@@ -33,7 +33,7 @@ def chat_bot():
 
         if best_match:
             answer: str = get_answer_for_question(best_match, knowledge_base)
-            print('bot: ' + {answer})
+            print('bot: ', answer)
         else:
             print("Bot: I dont't understand: Cand you teach me?")
             new_answer: str = input('Type the answer or "skip" to skip: ')
