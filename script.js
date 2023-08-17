@@ -56,6 +56,9 @@ async function sendMessage() {
             body: JSON.stringify({ message }),
         });
 
+        const responseText = await response.text();  // Get raw response text
+        console.log('Raw Response:', responseText);
+
         const responseData = await response.json();
         const botResponse = responseData.bot_response;
 
