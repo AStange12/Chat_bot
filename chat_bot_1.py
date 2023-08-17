@@ -85,7 +85,7 @@ class ChatBotHandler(BaseHTTPRequestHandler):
         return long.unknown() if highest_prob_list[best_match] < 1 else best_match
 
 if __name__ == '__main__':
-    server_address = ('', 8000)
+    server_address = ('localhost', 8000)
     httpd = HTTPServer(server_address, ChatBotHandler)
     print('Starting server on port 8000...')
     httpd.serve_forever()
